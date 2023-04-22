@@ -18,11 +18,6 @@ public class Huffman {
     }
     
 
-    public static void encoder(FileWriter out){
-        Node tree = treeMaker(freqTable());
-        fileToBinary((Branch)tree,out); // return binary file
-        
-    }
        public static void encoder(FileWriter out){
         Node tree = treeMaker(freqTable());
         fileToBinary((Branch)tree,out); // return binary file
