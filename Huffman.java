@@ -1,9 +1,8 @@
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
 
 public class Huffman {
     public static class Node {
@@ -18,31 +17,59 @@ public class Huffman {
     }
     
 
-       public static void encoder(FileWriter out){
+       public static void encoder(FileOutputStream out){
         Node tree = treeMaker(freqTable());
-        fileToBinary((Branch)tree,out); // return binary file
+        fileToBinary((Branch)tree,out,freqTable()); // return binary file
         
     }
     //used variables in many places
     public static int bitBuffer[]= new int[8];
     public static int bitBufferLength=0;
+    public static int bitBuffer2=0;
     public static byte bitBuffer1=0;
     public static boolean BufferFileEnd=false;
-    public static int totalChcount=31;//:TODO Insert Count of characters here!!
+    //public static int totalChcount=31;//:TODO Insert Count of characters here!!
 
-    public static void decoder(FileReader input , ArrayList<Character> theDataHuffman){
+    public static void decoder(FileInputStream input , ArrayList<Character> theDataHuffman){
         //My idea is that I will insert in the output all chars probabilites
         // and then I will use the probabilites to create a tree, when this code will be maded
         // and then I will use the tree to decode the input
         //test tree
-        Node tree = treeMaker(freqTable());
+        //for (char c : frequencyMap.keySet()) { 
+        //    Leaf leaf = new Leaf(); 
+        //    leaf.character = c; 
+        //    leaf.frequency = frequencyMap.get(c); 
+        //    leafs.add(leaf); 
+        //} 
+        ArrayList<Node> leafs = new ArrayList<>();
+        try {
+            int treesize = (byte)input.read();
+            int freq ;
+            char c;
+        for(int i=0;i<treesize;i++){
+            c = (char)input.read();
+            freq = ((byte)input.read() << 24) | ((byte)input.read() << 16) | ((byte)input.read() << 8) | (byte)input.read();
+            Leaf leaf = new Leaf();
+            leaf.character = c; ;
+            leaf.frequency = freq;
+            leafs.add(leaf); 
+            System.out.println("char: "+c+" freq: "+freq);
+
+        } 
+
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+       
+
+        Node tree = treeMaker(leafs);
         //flush the data, if it is not empty from encoder
-        bitBuffer1=0;
+        bitBuffer2=0;
         bitBufferLength=0;
         //
         char c=0;
         int debug=0;
-        while(!BufferFileEnd && (totalChcount-- >0)){
+        while((!BufferFileEnd || bitBufferLength-1 >0)){
             c=FindCharacterInTree((Branch)tree, input);
             //if(debug++>115)
             //System.out.println("debug");
@@ -118,7 +145,8 @@ public class Huffman {
         return leafs.get(0);
 
     }
-    public static Node fileToBinary(Branch tree,FileWriter out){
+    public static Node fileToBinary(Branch tree,FileOutputStream out,ArrayList<Node> leafs){
+
         // Notes on what to actually do:
         // u get a tree and u have to either:
         // create a new data object
@@ -134,9 +162,28 @@ public class Huffman {
         // dont forget to insert the tree itself not just the compressed data
 
         // dont hesitate to ask questions or make remarks or ask for help
+        leafs.size();
+        int freqency=0;
+        try {//try tree
+            out.write((char)leafs.size());//size of tree
+            for(int i=0;i<leafs.size();i++){
+                freqency=leafs.get(i).frequency;
+                out.write((char)((Leaf)leafs.get(i)).character);
+                out.write(freqency >> 24);
+                out.write(freqency >> 16);
+                out.write(freqency >> 8);
+                out.write(freqency);
+                
+            }
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+        
+
+
         bitBuffer1=0;
         bitBufferLength=0;
-        String test = "AAABBBBNNBBAABNBABBNBNBNBNAAAAA";
+        String test = "ABFBBBNNBBAFFF"+ (char)248+"OOORRRRABNBABBNBNBNBNAAAAARR" + (char)248+"ABFBBBNNBBOAFFF"+ (char)248+"OOORRRRABNBABBNBNBNBNAAAAARR" + (char)248;
         try {
         for(int i=0;i<test.length();i++){
             writeBits(FindCharacter(tree, test.charAt(i)),out);  
@@ -147,11 +194,11 @@ public class Huffman {
             //I think to make it in freqency table
 
             }
-            if (bitBuffer1!=-1){
+            
                 System.out.println(bitBuffer1&0xFF);
                 int totalbits = bitBufferLength;
                 out.write((char)(bitBuffer1<< 8-bitBufferLength));
-        }
+                out.write((char)bitBufferLength);
         out.close();
         } catch (Exception e) {
             System.out.println(e);
@@ -184,7 +231,7 @@ public class Huffman {
         return -1;
     }
     
-public static char FindCharacterInTree(Branch tree,FileReader Input){
+public static char FindCharacterInTree(Branch tree,FileInputStream Input){
     int bit;
     while(true){//IF everything is working correctly, this will not loop forever
         bit = BitFromBuffer(Input);
@@ -212,31 +259,47 @@ public static char FindCharacterInTree(Branch tree,FileReader Input){
 
 
 }
-public static int BitFromBuffer(FileReader Input) {
-    int bit=0;
-    //read next byte if bitBufferLength ==0,
+public static int BitFromBuffer(FileInputStream input) {
+    int bit = 0;
+    int newBits = 0;
+    // read next byte if bitBufferLength == 0,
     // and get first bit from bitBuffer1
     // and shift bitBuffer1 to the left
-    //"00011" <<"00110" << "01100" << "11000"
+    // "00011" << "00110" << "01100" << "11000"
     try {
-        if(bitBufferLength==0){
-            bitBuffer1=(byte)Input.read();
-            bitBufferLength=8;
+        if (bitBufferLength <= 24 && !BufferFileEnd) {
+            while (bitBufferLength <= 24) {
+                
+                newBits = input.read();
+
+                if (newBits == -1) {
+                    bitBufferLength = bitBufferLength + ((byte)(bitBuffer2>>8 & 0xFF))-16;// Last byte is count of used bits 
+                    // ((byte)(bitBuffer2>>8 & 0xFF)) is amount of used bits
+                    //(used bits count + used bits byte = 16 bits)
+                    //16bits-amount of used bits is << amount of bits to shift
+                    BufferFileEnd = true;
+                    break;
+                }
+                
+                bitBuffer2 |= newBits;
+                if(bitBufferLength<24)
+                bitBuffer2 <<= 8;
+                bitBufferLength += 8;
+            }
         }
         bitBufferLength--;
-        bit=(bitBuffer1 >> 7) & 1;
-        bitBuffer1<<=1;
-            return bit;
-        
+        bit = (bitBuffer2 >> 31) & 1;
+        bitBuffer2 <<= 1; // changed from (bitBuffer1 >> 31) & 1;
+        return bit;
     } catch (Exception e) {
         System.out.println(e);
-        BufferFileEnd=true;
+        BufferFileEnd = true;
         return -1;
     }
 }
 public static int debug=0;
 
-public static void writeBits(int bits,FileWriter out) throws IOException 
+public static void writeBits(int bits,FileOutputStream out) throws IOException 
 {//there 2 is 1, and 1 is 0;
     // inverse order, Used with FindCharacter which give inversed order
     while(bits>0){
