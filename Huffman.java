@@ -278,6 +278,8 @@ public static int BitFromBuffer(FileInputStream input) {
                     //(used bits count + used bits byte = 16 bits)
                     //16bits-amount of used bits is << amount of bits to shift
                     BufferFileEnd = true;
+                    if(bitBufferLength<24)
+                    bitBuffer2 <<= 8;
                     break;
                 }
                 
