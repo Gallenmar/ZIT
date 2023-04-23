@@ -10,10 +10,13 @@
 
 
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Scanner;
 
 //import java.util.ArrayList;
@@ -101,7 +104,7 @@ public class Zit {
 
 
     // prototype code
-    char[] testData = {'B','A','N','A','N','A'};
+    char[] testData = {'B','A','N','A','N','A','F','O','R','F','U','F','N', (char)248};
     for(char i : testData){
       Data.theData.add(i);
     }
@@ -121,7 +124,7 @@ public class Zit {
 
     LZ77.encoder();
     try {
-        FileWriter writer = new FileWriter("outputH.bin"); // create FileWriter object to write to file
+      FileOutputStream writer = new FileOutputStream("output.txt"); // create FileWriter object to write to file
         //BufferedWriter out = new BufferedWriter(writer);
         
     Huffman.encoder(writer);//
@@ -141,7 +144,7 @@ public class Zit {
     //Test Input
     try {
       //FileInputStream input = new FileInputStream("outputH.bin");
-      FileReader reader = new FileReader("outputH.bin");
+      FileInputStream reader = new FileInputStream("output.txt");
       // I made theDataHuffman only to avoid problems, If somebody use Data between Huffman steps
       
       Huffman.decoder(reader, Data.theDataHuffman);
