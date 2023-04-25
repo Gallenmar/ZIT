@@ -64,11 +64,43 @@ public class LZ77 {
 
 
 
-        // prototype code
+//         // prototype code
+//         Triplet trip = new Triplet();
+//         trip.first = 3;
+//         trip.second = 4;
+//         trip.next = 'E';
+//         return trip;
         Triplet trip = new Triplet();
-        trip.first = 3;
-        trip.second = 4;
-        trip.next = 'E';
-        return trip;
+    byte maxLength = 0;
+    byte maxOffset = 0;
+    char nextChar = lookAhead[0];
+    for (byte i = 0; i < searchBuf.length; i++) {
+        byte len = 0;
+        while (i + len < searchBuf.length && len < lookAhead.length && searchBuf[i + len] == lookAhead[len]) {
+            len++;
+        }
+        if (len > maxLength) {
+            maxLength = len;
+            maxOffset = i;
+            if (i + len < searchBuf.length) {
+                nextChar = searchBuf[i + len];
+            } else {
+                nextChar = lookAhead[len];
+            }
+        }
+    }
+    maxOffset = (byte)(searchBuf.length-maxOffset);
+    if (maxLength == 0) {
+        trip.first = 0;
+        trip.second = 0;
+        trip.next = lookAhead[0];
+    } else {
+        trip.first = maxOffset;
+        trip.second = maxLength;
+        trip.next = nextChar;
+    }
+    return trip;
+        
+        
     }
 }
