@@ -183,27 +183,31 @@ public class Huffman {
 
         bitBuffer1=0;
         bitBufferLength=0;
-        String test = "ABFBBBNNBBAFFF"+ (char)248+"OOORRRRABNBABBNBNBNBNAAAAARR" + (char)248+"ABFBBBNNBBOAFFF"+ (char)248+"OOORRRRABNBABBNBNBNBNAAAAARR" + (char)248;
+        //String test = "ABFBBBNNBBAFFF"+ (char)248+"OOORRRRABNBABBNBNBNBNAAAAARR" + (char)248+"ABFBBBNNBBOAFFF"+ (char)248+"OOORRRRABNBABBNBNBNBNAAAAARR" + (char)248;
         try {
-        for(int i=0;i<test.length();i++){
-            writeBits(FindCharacter(tree, test.charAt(i)),out);  
-            //FindCharacter as "11212" and insert these bits
-            //in bitBuffer1, If bitbuffer ==8 it will write it to the file
-            // if string ended and bitbuffer1 is not empty, it will write it to the file as "111" <<5 11100000
-            //:TODO: I need to count totalChcount before writing to file, I need to know how many bits to write
-            //I think to make it in freqency table
+            //for(int i=0;i<test.length();i++){
+            for(int i=0;i<Data.theData.size();i++){
+                
 
-            }
-            
-                System.out.println(bitBuffer1&0xFF);
-                int totalbits = bitBufferLength;
-                out.write((char)(bitBuffer1<< 8-bitBufferLength));
-                out.write((char)bitBufferLength);
-        out.close();
+                //writeBits(FindCharacter(tree, test.charAt(i)),out);  
+                writeBits(FindCharacter(tree, Data.theData.get(i)),out);  
+                //FindCharacter as "11212" and insert these bits
+                //in bitBuffer1, If bitbuffer ==8 it will write it to the file
+                // if string ended and bitbuffer1 is not empty, it will write it to the file as "111" <<5 11100000
+                //:TODO: I need to count totalChcount before writing to file, I need to know how many bits to write
+                //I think to make it in freqency table
+
+                }
+                
+                    //System.out.println(bitBuffer1&0xFF);
+                    int totalbits = bitBufferLength;
+                    out.write((char)(bitBuffer1<< 8-bitBufferLength));
+                    out.write((char)bitBufferLength);
+            out.close();
         } catch (Exception e) {
             System.out.println(e);
         }
-        System.out.println("fileToBinary not erroring out");
+        //System.out.println("fileToBinary not erroring out");
         return tree;//IDK what to return there
     }
     

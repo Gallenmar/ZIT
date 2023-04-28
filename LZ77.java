@@ -25,7 +25,7 @@ public class LZ77 {
 
 
         // prototype code
-        System.out.println("LZ77 encoding......");
+        // System.out.println("LZ77 not working");
 
 
 
@@ -36,7 +36,7 @@ public class LZ77 {
         char[] lookAhead = {'A','N','A', 'F'};
         Triplet tmp = new Triplet();
         tmp = window(searchBuf,lookAhead);
-        System.out.println("first byte is: "+tmp.first);
+        //System.out.println("first byte is: "+tmp.first+tmp.second+tmp.next);
         
     }
 
@@ -71,35 +71,35 @@ public class LZ77 {
 //         trip.next = 'E';
 //         return trip;
         Triplet trip = new Triplet();
-    byte maxLength = 0;
-    byte maxOffset = 0;
-    char nextChar = lookAhead[0];
-    for (byte i = 0; i < searchBuf.length; i++) {
-        byte len = 0;
-        while (i + len < searchBuf.length && len < lookAhead.length && searchBuf[i + len] == lookAhead[len]) {
-            len++;
-        }
-        if (len > maxLength) {
-            maxLength = len;
-            maxOffset = i;
-            if (i + len < searchBuf.length) {
-                nextChar = searchBuf[i + len];
-            } else {
-                nextChar = lookAhead[len];
+        byte maxLength = 0;
+        byte maxOffset = 0;
+        char nextChar = lookAhead[0];
+        for (byte i = 0; i < searchBuf.length; i++) {
+            byte len = 0;
+            while (i + len < searchBuf.length && len < lookAhead.length && searchBuf[i + len] == lookAhead[len]) {
+                len++;
+            }
+            if (len > maxLength) {
+                maxLength = len;
+                maxOffset = i;
+                if (i + len < searchBuf.length) {
+                    nextChar = searchBuf[i + len];
+                } else {
+                    nextChar = lookAhead[len];
+                }
             }
         }
-    }
-    maxOffset = (byte)(searchBuf.length-maxOffset);
-    if (maxLength == 0) {
-        trip.first = 0;
-        trip.second = 0;
-        trip.next = lookAhead[0];
-    } else {
-        trip.first = maxOffset;
-        trip.second = maxLength;
-        trip.next = nextChar;
-    }
-    return trip;
+        maxOffset = (byte)(searchBuf.length-maxOffset);
+        if (maxLength == 0) {
+            trip.first = 0;
+            trip.second = 0;
+            trip.next = lookAhead[0];
+        } else {
+            trip.first = maxOffset;
+            trip.second = maxLength;
+            trip.next = nextChar;
+        }
+        return trip;
         
         
     }

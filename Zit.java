@@ -18,6 +18,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Scanner;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 
 //import java.util.ArrayList;
 
@@ -42,6 +44,10 @@ public class Zit {
           sourceFile = sc.next();
           System.out.print("archive name: ");
           resultFile = sc.next();
+          // resultFile = sc.nextLine();
+          // if (resultFile.isEmpty()){
+          //   resultFile=sourceFile+".zit";
+          // }
           comp(sourceFile, resultFile);
           break;
         case "decomp":
@@ -104,31 +110,61 @@ public class Zit {
 
 
     // prototype code
-    char[] testData = {'B','A','N','A','N','A','F','O','R','F','U','F','N', (char)248};
-    for(char i : testData){
-      Data.theData.add(i);
+    // char[] testData = {'B','A','N','A','N','A','F','O','R','F','U','F','N', (char)248};
+    // for(char i : testData){
+    //   Data.theData.add(i);
+    // }
+    try {
+      BufferedReader reader = new BufferedReader(new FileReader(sourceFile));
+      int currentByte;
+      while ((currentByte = reader.read()) != -1) {
+          char currentChar = (char) currentByte;
+          Data.theData.add(currentChar);
+      }
+      reader.close();
+    } catch (IOException e) {
+        System.out.println("Error: " + e.getMessage());
     }
   }
 
-  public static void writeFile(String resultFile){
+  public static void writeFile(String outputFilePath){
     // Read from Data.theData and write to resultFile
 
 
     // prototype code
-    System.out.println("writing......");
-    System.out.println(Data.theData);
+    // System.out.println("writing......");
+    // System.out.println(Data.theData);
+    try {
+      BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath));
+      for (char c : Data.theData) {
+          writer.write(c);
+      }
+      writer.close();
+    } catch (IOException e) {
+        System.out.println("Error: " + e.getMessage());
+    }
   }
+  public static void printData() {
+    for (char c : Data.theData) {
+        System.out.print(c);
+    }
+    System.out.println();
+  }
+
 
 	public static void comp(String sourceFile, String resultFile) {
     readFile(sourceFile);
+    //printData();
+    //writeFile(resultFile);
+
 
     LZ77.encoder();
     try {
-      FileOutputStream writer = new FileOutputStream("output.txt"); // create FileWriter object to write to file
+      FileOutputStream writer = new FileOutputStream(resultFile); // create FileWriter object to write to file
         //BufferedWriter out = new BufferedWriter(writer);
         
-    Huffman.encoder(writer);//
-    writer.close();
+      Huffman.encoder(writer);
+      writer.close();
     } catch (Exception e) {
       System.out.println(e);
       // TODO: handle exception
@@ -144,7 +180,7 @@ public class Zit {
     //Test Input
     try {
       //FileInputStream input = new FileInputStream("outputH.bin");
-      FileInputStream reader = new FileInputStream("output.txt");
+      FileInputStream reader = new FileInputStream(sourceFile);
       // I made theDataHuffman only to avoid problems, If somebody use Data between Huffman steps
       
       Huffman.decoder(reader, Data.theDataHuffman);
@@ -226,25 +262,3 @@ public class Zit {
     System.out.println("Ņikita Plotņikovs 12. gr. 221RDB021 (Grupas vadītājs)");
 	}
 }
-
-  // TODO: (for Nikita)
-  //// make data be passed not as an argument but as a global var
-  //// write shell for freqTable
-  //// termcounter bug
-  //// initialize junk data for freq table
-
-  //// make shell for tree maker
-  //// make shell for file to binary
-  //// make shell for window
-
-  //// write comments for every method explaining what exactly to do
-  //// readfile write file
-  //// LZ
-  //// window
-
-  //// implement comp decomp propper file name handle
-  //// convert from byte array to char array
-  //// make window tests prettier
-  // move nodes inside huffman + figure out static methods and nested classes
-  // write tests for all functions (insert Sysout in shells or smtn)
-  // start writing tree maker
