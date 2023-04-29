@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 //import java.util.ArrayList;
 
 public class LZ77 {
@@ -36,7 +38,7 @@ public class LZ77 {
         char[] lookAhead = {'A','N','A', 'F'};
         Triplet tmp = new Triplet();
         tmp = window(searchBuf,lookAhead);
-        //System.out.println("first byte is: "+tmp.first+tmp.second+tmp.next);
+        System.out.println("first byte is: "+tmp.first+tmp.second+tmp.next);
         
     }
 
@@ -46,30 +48,43 @@ public class LZ77 {
         System.out.println("LZ77 decoding......");
     }
 
-    public static Triplet window(char[] searchBuf,char[] lookAhead){
-        // take 2 arrays (talk with Kostya how big they are)
-        // make triplets (number1, number2, character) where number1 is the jump back length,
-        // number2 is the length of the occurrence and character is the next letter after occurance
-        // this is the standard LZ77 sliding window mechanic
+    public static Triplet subWindow(char[] searchBuf,char[] lookAhead){
+        Triplet trip = new Triplet();
+        byte maxLength = 0;
+        byte maxOffset = 0;
+        char nextChar = lookAhead[0];
+        byte len = 0;
+        byte i=0;
+        while (i + len < searchBuf.length && len < lookAhead.length && searchBuf[i + len] == lookAhead[len]) {
+            len++;
+        }
+        if (len > maxLength) {
+            maxLength = len;
+            maxOffset = i;
+            if (i + len < searchBuf.length) {
+                nextChar = searchBuf[i + len];
+            } else {
+                nextChar = lookAhead[len];
+            }
+        }
+        maxOffset = (byte)(searchBuf.length-maxOffset);
+        if (maxLength == 0) {
+            trip.first = 0;
+            trip.second = 0;
+            trip.next = lookAhead[0];
+        } else {
+            trip.first = maxOffset;
+            trip.second = maxLength;
+            trip.next = nextChar;
+            searchBuf = Arrays.copyOfRange(searchBuf, searchBuf.length- maxOffset, searchBuf.length);
+            lookAhead = Arrays.copyOfRange(lookAhead, 0, maxLength);
+            subWindow(searchBuf, lookAhead);
+        }
         
-        // keep in mind that position has more bits then the length
-        // we encode position and length with 2 bytes (16bits)
-        // where 12 bits are allocated for position and only 4 bits for length
+        return trip;
+    }
 
-        // u can use:
-        // parseInt("001001", 2) | parseInt(x, base)
-        // for writing bit by bit
-
-        // dont hesitate to ask questions or make remarks or ask for help
-
-
-
-//         // prototype code
-//         Triplet trip = new Triplet();
-//         trip.first = 3;
-//         trip.second = 4;
-//         trip.next = 'E';
-//         return trip;
+    public static Triplet window(char[] searchBuf,char[] lookAhead){
         Triplet trip = new Triplet();
         byte maxLength = 0;
         byte maxOffset = 0;
@@ -82,11 +97,7 @@ public class LZ77 {
             if (len > maxLength) {
                 maxLength = len;
                 maxOffset = i;
-                if (i + len < searchBuf.length) {
-                    nextChar = searchBuf[i + len];
-                } else {
-                    nextChar = lookAhead[len];
-                }
+                nextChar = lookAhead[len];
             }
         }
         maxOffset = (byte)(searchBuf.length-maxOffset);
@@ -98,9 +109,20 @@ public class LZ77 {
             trip.first = maxOffset;
             trip.second = maxLength;
             trip.next = nextChar;
+            Triplet tmpTrip = new Triplet();
+
+            searchBuf = Arrays.copyOfRange(searchBuf, searchBuf.length- maxOffset, searchBuf.length);
+            lookAhead = Arrays.copyOfRange(lookAhead, maxLength, lookAhead.length);
+            tmpTrip = window(searchBuf, lookAhead);
+            if (tmpTrip.first == maxOffset){
+                trip.second += tmpTrip.second;
+                trip.next = tmpTrip.next;
+            }
+
         }
-        return trip;
         
+        return trip;
+
         
     }
 }
