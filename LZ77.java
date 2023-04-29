@@ -48,41 +48,6 @@ public class LZ77 {
         System.out.println("LZ77 decoding......");
     }
 
-    public static Triplet subWindow(char[] searchBuf,char[] lookAhead){
-        Triplet trip = new Triplet();
-        byte maxLength = 0;
-        byte maxOffset = 0;
-        char nextChar = lookAhead[0];
-        byte len = 0;
-        byte i=0;
-        while (i + len < searchBuf.length && len < lookAhead.length && searchBuf[i + len] == lookAhead[len]) {
-            len++;
-        }
-        if (len > maxLength) {
-            maxLength = len;
-            maxOffset = i;
-            if (i + len < searchBuf.length) {
-                nextChar = searchBuf[i + len];
-            } else {
-                nextChar = lookAhead[len];
-            }
-        }
-        maxOffset = (byte)(searchBuf.length-maxOffset);
-        if (maxLength == 0) {
-            trip.first = 0;
-            trip.second = 0;
-            trip.next = lookAhead[0];
-        } else {
-            trip.first = maxOffset;
-            trip.second = maxLength;
-            trip.next = nextChar;
-            searchBuf = Arrays.copyOfRange(searchBuf, searchBuf.length- maxOffset, searchBuf.length);
-            lookAhead = Arrays.copyOfRange(lookAhead, 0, maxLength);
-            subWindow(searchBuf, lookAhead);
-        }
-        
-        return trip;
-    }
 
     public static Triplet window(char[] searchBuf,char[] lookAhead){
         Triplet trip = new Triplet();
