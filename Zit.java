@@ -46,19 +46,18 @@ class Huffman {
   public static void decoder(FileInputStream input , ArrayList<Character> theDataHuffman){
       ArrayList<Node> leafs = new ArrayList<>();
       try {
-          int treesize = input.read();
-          treesize +=input.read();
-          System.out.println("tree size: "+ treesize);
+          int treesize = (byte)input.read();
           int freq ;
           char c;
           for(int i=0;i<treesize;i++){
               c = (char)input.read();
               freq = ((byte)input.read() << 24) | ((byte)input.read() << 16) | ((byte)input.read() << 8) | (byte)input.read();
               Leaf leaf = new Leaf();
-              leaf.character = c;
+              leaf.character = c; ;
               leaf.frequency = freq;
               leafs.add(leaf); 
               System.out.println("char: "+c+" freq: "+freq);
+
           } 
 
       } catch (Exception e) {
@@ -73,10 +72,10 @@ class Huffman {
       char c=0;
       int debug=0;
       while((!BufferFileEnd || bitBufferLength-1 >0)){
-        c=FindCharacterInTree((Branch)tree, input);
-        //System.out.print(c);
-        theDataHuffman.add(c);
-      }
+          c=FindCharacterInTree((Branch)tree, input);
+          System.out.print(c);
+              theDataHuffman.add(c);
+          }
   }
 
 
@@ -139,22 +138,12 @@ class Huffman {
 
   }
   public static Node fileToBinary(Branch tree,FileOutputStream out,ArrayList<Node> leafs){
-    int size = leafs.size();
-      System.out.println(size);
+      leafs.size();
       int freqency=0;
       try {//try tree
-          if(size>255){
-            out.write((byte)255);
-            out.write(size-255);
-          } else{
-            out.write((byte)0);
-            out.write(size);
-          }
-          //size of tree
-
+          out.write((char)leafs.size());//size of tree
           for(int i=0;i<leafs.size();i++){
               freqency=leafs.get(i).frequency;
-              System.out.println("char: "+(char)((Leaf)leafs.get(i)).character+" freq: "+freqency);
               out.write((char)((Leaf)leafs.get(i)).character);
               out.write(freqency >> 24);
               out.write(freqency >> 16);
@@ -406,7 +395,7 @@ public class Zit {
   public static void writeFile(String outputFilePath){
     try {
       BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath));
-      for (char c : Data.theDataHuffman) {
+      for (char c : Data.theData) {
           writer.write(c);
       }
       writer.close();
@@ -414,7 +403,6 @@ public class Zit {
         System.out.println("Error: " + e.getMessage());
     }
   }
-
   public static void printData() {
     for (char c : Data.theData) {
         System.out.print(c);
