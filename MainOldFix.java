@@ -294,8 +294,7 @@ class Huffman {
 }
 
 public class Main {
-  public static byte[] buff=new byte[1000];
-  public static int buffIndex=0;
+
   public static void main(String[] args) {
     Scanner sc = new Scanner(System.in);
     String choiseStr;
@@ -313,9 +312,7 @@ public class Main {
           sourceFile = sc.next();
           System.out.print("archive name: ");
           resultFile = sc.next();
-          //long time = System.currentTimeMillis();
           comp(sourceFile, resultFile);
-          //System.out.println("Time: " + (System.currentTimeMillis() - time) + " ms");
           break;
         case "decomp":
           terminationCounter = 0;
@@ -323,9 +320,7 @@ public class Main {
           sourceFile = sc.next();
           System.out.print("file name: ");
           resultFile = sc.next();
-          //time = System.currentTimeMillis();
           decomp(sourceFile, resultFile);
-          //System.out.println("Time: " + (System.currentTimeMillis() - time) + " ms");
           break;
         case "size":
           terminationCounter = 0;
@@ -367,15 +362,12 @@ public class Main {
 
   public static void readFile(String sourceFile) {
     try {
-                FileInputStream reader = new FileInputStream(sourceFile);
-      //int currentByte;
-      while (reader.available() > 0) {
-        reader.read(Main.buff);
-        for ( byte currentByte : Main.buff) {
+      FileInputStream reader = new FileInputStream(sourceFile);
+      int currentByte;
+      while ((currentByte = reader.read()) != -1) {
         byte currentChar = (byte) currentByte;
         Data.theData.add(currentChar);
       }
-    }
       reader.close();
     } catch (IOException e) {
       System.out.println("Error: " + e.getMessage());
@@ -386,14 +378,8 @@ public class Main {
     try {
       FileOutputStream writer = new FileOutputStream(outputFilePath);
       for (byte c : Data.theDataHuffman) {
-        buff[ Main.buffIndex++]=c;
-        if( buffIndex==1000){
-          writer.write( Main.buff);
-            Main.buffIndex=0;
-        }
+        writer.write(c);
       }
-      writer.write(Main.buff, 0, Main.buffIndex);//debug
-
       writer.close();
     } catch (IOException e) {
       System.out.println("Error: " + e.getMessage());
@@ -408,9 +394,6 @@ public class Main {
   }
 
   public static void comp(String sourceFile, String resultFile) {
-    
-    Main.buffIndex=0;
-    Main.buff=new byte[1000];
     File file = new File(sourceFile);
     if (file.exists()) {
       readFile(sourceFile);
@@ -431,13 +414,11 @@ public class Main {
   }
 
   public static void decomp(String sourceFile, String resultFile) {
-    Main.buffIndex=0;
-    Main.buff=new byte[1000];
+
     try {
       FileInputStream reader = new FileInputStream(sourceFile);
 
       Huffman.decoder(reader, Data.theDataHuffman);
-      
       reader.close();
     } catch (Exception e) {
       // System.out.println(e);
