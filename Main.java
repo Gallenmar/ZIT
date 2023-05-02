@@ -12,8 +12,8 @@ import java.io.*;
 import java.util.*;
 
 class Data {
-  static ArrayList<Character> theData = new ArrayList<>();
-  static ArrayList<Character> theDataHuffman = new ArrayList<>();
+  static ArrayList<Byte> theData = new ArrayList<>();
+  static ArrayList<Byte> theDataHuffman = new ArrayList<>();
 }
 
 class Huffman {
@@ -27,7 +27,7 @@ class Huffman {
   }
 
   public static class Leaf extends Node {
-    char character;
+    byte character;
   }
 
   public static void encoder(FileOutputStream out) {
@@ -42,49 +42,49 @@ class Huffman {
   public static byte bitBuffer1 = 0;
   public static boolean BufferFileEnd = false;
 
-  public static void decoder(FileInputStream input, ArrayList<Character> theDataHuffman) {
+  public static void decoder(FileInputStream input, ArrayList<Byte> theDataHuffman) {
     ArrayList<Node> leafs = new ArrayList<>();
-    try {
-      int treesize = (byte) input.read();
-      int freq;
-      char c;
-      for (int i = 0; i < treesize; i++) {
-        c = (char) input.read();
-        freq = ((byte) input.read() << 24) | ((byte) input.read() << 16) | ((byte) input.read() << 8)
-            | (byte) input.read();
-        Leaf leaf = new Leaf();
-        leaf.character = c;
-        ;
-        leaf.frequency = freq;
-        leafs.add(leaf);
-        System.out.println("char: " + c + " freq: " + freq);
+        try {
+            int treesize = (byte)input.read()& 0xFF;
+            int freq ;
+            byte c;
+        for(int i=0;i<treesize;i++){
+            c = (byte)input.read();
+            freq = ((byte)input.read() << 24) | ((byte)input.read() << 16) | ((byte)input.read() << 8) | (byte)input.read()& 0xFF;
+            Leaf leaf = new Leaf();
+            leaf.character = c;
+            leaf.frequency = freq;
+            leafs.add(leaf); 
+           // System.out.println("char: "+c+" freq: "+freq);
 
-      }
+        } 
 
-    } catch (Exception e) {
+        } catch (Exception e) {
+            System.out.println(e);
+            // TODO: handle exception
+        }
+       
 
-    }
-
-    Node tree = treeMaker(leafs);
+        Node tree = treeMaker(leafs);
     bitBuffer2 = 0;
     bitBufferLength = 0;
     //
-    char c = 0;
+    byte c = 0;
     int debug = 0;
     while ((!BufferFileEnd || bitBufferLength - 1 > 0)) {
       c = FindCharacterInTree((Branch) tree, input);
-      System.out.print(c);
+      //System.out.print(c);
       theDataHuffman.add(c);
     }
   }
 
   public static ArrayList<Node> freqTable() {
     ArrayList<Node> leafs = new ArrayList<>();
-    HashMap<Character, Integer> frequencyMap = new HashMap<>();
-    for (char c : Data.theData) {
+    HashMap<Byte, Integer> frequencyMap = new HashMap<>();
+    for (byte c : Data.theData) {
       frequencyMap.put(c, frequencyMap.getOrDefault(c, 0) + 1);
     }
-    for (char c : frequencyMap.keySet()) {
+    for (byte c : frequencyMap.keySet()) {
       Leaf leaf = new Leaf();
       leaf.character = c;
       leaf.frequency = frequencyMap.get(c);
@@ -174,8 +174,8 @@ class Huffman {
     return tree;
   }
 
-  public static int FindCharacter(Branch tree, char c) {
-    int C_Founded = 0;
+  public static long FindCharacter(Branch tree, byte c) {
+    long C_Founded = 0;
     if (tree.left instanceof Leaf) {
       if (((Leaf) tree.left).character == c)
         return 1;
@@ -196,19 +196,19 @@ class Huffman {
     return -1;
   }
 
-  public static char FindCharacterInTree(Branch tree, FileInputStream Input) {
+  public static byte FindCharacterInTree(Branch tree, FileInputStream Input) {
     int bit;
     while (true) {
       bit = BitFromBuffer(Input);
       if (bit == 0) {
         if (tree.left instanceof Leaf) {
-          return (char) ((Leaf) tree.left).character;
+          return ((Leaf) tree.left).character;
         } else {
           tree = (Branch) tree.left;
         }
       } else if (bit == 1) {
         if (tree.right instanceof Leaf) {
-          return (char) ((Leaf) tree.right).character;
+          return ((Leaf) tree.right).character;
         } else {
           tree = (Branch) tree.right;
         }
@@ -254,14 +254,14 @@ class Huffman {
 
   public static int debug = 0;
 
-  public static void writeBits(int bits, FileOutputStream out) throws IOException {// there 2 is 1, and 1 is 0;
+  public static void writeBits(long bits, FileOutputStream out) throws IOException {// there 2 is 1, and 1 is 0;
                                                                                    // inverse order, Used with
                                                                                    // FindCharacter which give inversed
                                                                                    // order
     while (bits > 0) {
       // if(debug==44)
       // System.out.println("debug");
-      int lastBit = (bits % 10) - 1; // extract the last digit and-1, 2=1, 1=0
+      int lastBit = (int)(bits % 10) - 1; // extract the last digit and-1, 2=1, 1=0
       bits /= 10; // remove the last digit from the number
       bitBuffer1 <<= 1;
       bitBuffer1 |= lastBit;
@@ -362,10 +362,10 @@ public class Main {
 
   public static void readFile(String sourceFile) {
     try {
-      BufferedReader reader = new BufferedReader(new FileReader(sourceFile));
+      FileInputStream reader = new FileInputStream(sourceFile);
       int currentByte;
       while ((currentByte = reader.read()) != -1) {
-        char currentChar = (char) currentByte;
+        byte currentChar = (byte) currentByte;
         Data.theData.add(currentChar);
       }
       reader.close();
@@ -376,8 +376,8 @@ public class Main {
 
   public static void writeFile(String outputFilePath) {
     try {
-      BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath));
-      for (char c : Data.theData) {
+      FileOutputStream writer = new FileOutputStream(outputFilePath);
+      for (byte c : Data.theDataHuffman) {
         writer.write(c);
       }
       writer.close();
@@ -387,7 +387,7 @@ public class Main {
   }
 
   public static void printData() {
-    for (char c : Data.theData) {
+    for (byte c : Data.theData) {
       System.out.print(c);
     }
     System.out.println();
